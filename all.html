@@ -26,21 +26,6 @@
     body{font-family:var(--fn);color:var(--tx);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
     body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.055) 2px,rgba(0,0,0,.055) 4px);pointer-events:none;z-index:9999}
 
-    /* ── LOGIN SCREEN ── */
-    #pg-auth{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0}
-    .auth-box{width:100%;max-width:380px;padding:1rem}
-    .auth-logo{font-size:.75rem;font-weight:700;color:var(--cy);letter-spacing:.15em;margin-bottom:1.8rem;text-align:center}
-    .auth-tabs{display:flex;border:1px solid var(--b1);margin-bottom:1.2rem}
-    .auth-tab{flex:1;padding:.5rem;font-family:var(--fn);font-size:.65rem;font-weight:700;letter-spacing:.08em;background:none;border:none;color:var(--tx3);cursor:pointer;transition:all .1s}
-    .auth-tab.on{background:var(--cy2);color:var(--cy)}
-    .auth-field{margin-bottom:.7rem}
-    .auth-label{font-size:.58rem;font-weight:700;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase;margin-bottom:.3rem;display:block}
-    .auth-inp{width:100%;background:var(--s1);border:1px solid var(--b1);padding:.6rem .75rem;color:var(--tx);font-family:var(--fn);font-size:.8rem;outline:none;transition:border-color .12s}
-    .auth-inp:focus{border-color:var(--bh)}
-    .auth-btn{width:100%;background:var(--cy2);border:1px solid rgba(0,234,255,.22);padding:.65rem;color:var(--cy);font-family:var(--fn);font-size:.75rem;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .1s;margin-top:.4rem}
-    .auth-btn:hover{background:rgba(0,234,255,.18)}
-    .auth-err{font-size:.65rem;color:var(--re);margin-top:.5rem;min-height:1rem;text-align:center}
-
     /* ── TOPBAR ── */
     .bar{height:26px;display:flex;align-items:stretch;background:rgba(0,0,0,.6);border-bottom:1px solid var(--b1);backdrop-filter:blur(24px) saturate(140%) brightness(.8);flex-shrink:0;position:relative;z-index:100}
     .bar-logo{display:flex;align-items:center;padding:0 .9rem;font-size:.68rem;font-weight:700;color:var(--cy);letter-spacing:.1em;border-right:1px solid var(--b1);flex-shrink:0}
@@ -49,13 +34,12 @@
     .nb:hover{color:var(--tx);background:var(--tx4)}
     .nb.on{color:var(--cy);background:var(--cy3);box-shadow:inset 0 -1px 0 var(--cy)}
     .nb .ndot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.55;flex-shrink:0}
-    .bar-right{margin-left:auto;display:flex;align-items:center;gap:.7rem;padding:0 .9rem;border-left:1px solid var(--b1);font-size:.62rem;color:var(--tx2);flex-shrink:0}
+    .bar-right{margin-left:auto;display:flex;align-items:center;gap:1rem;padding:0 .9rem;border-left:1px solid var(--b1);font-size:.62rem;color:var(--tx2);flex-shrink:0}
     #bc{color:var(--cy);font-weight:700;letter-spacing:.09em}
+
+    /* server status dot */
     #srv-dot{width:6px;height:6px;border-radius:50%;background:var(--re);flex-shrink:0;transition:background .3s}
     #srv-dot.ok{background:var(--gr);box-shadow:0 0 6px var(--gr)}
-    #bar-user{font-size:.6rem;color:var(--tx3);letter-spacing:.05em}
-    #logout-btn{background:none;border:1px solid var(--b1);padding:.15rem .5rem;color:var(--tx3);font-family:var(--fn);font-size:.58rem;cursor:pointer;transition:color .1s,border-color .1s;letter-spacing:.05em}
-    #logout-btn:hover{color:var(--re);border-color:var(--re)}
 
     /* ── PAGES ── */
     .pg{display:none;flex:1;overflow:hidden;flex-direction:column}
@@ -194,30 +178,6 @@
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="pg-auth">
-  <div class="auth-box">
-    <div class="auth-logo">&gt;_ sumit.local</div>
-    <div class="auth-tabs">
-      <button class="auth-tab on" id="tab-login" onclick="switchTab('login')">LOGIN</button>
-      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">REGISTER</button>
-    </div>
-    <div class="auth-field">
-      <label class="auth-label">username</label>
-      <input class="auth-inp" id="auth-user" type="text" placeholder="your username" autocomplete="off" spellcheck="false">
-    </div>
-    <div class="auth-field">
-      <label class="auth-label">password</label>
-      <input class="auth-inp" id="auth-pass" type="password" placeholder="your password">
-    </div>
-    <button class="auth-btn" id="auth-submit" onclick="submitAuth()">LOGIN</button>
-    <div class="auth-err" id="auth-err"></div>
-  </div>
-</div>
-
-<!-- MAIN APP (hidden until logged in) -->
-<div id="main-app" style="display:none;flex:1;flex-direction:column;height:100%">
-
 <div class="bar">
   <div class="bar-logo">&gt;_ sumit.local</div>
   <nav class="bar-nav">
@@ -228,8 +188,6 @@
   </nav>
   <div class="bar-right">
     <div id="srv-dot" title="server status"></div>
-    <span id="bar-user"></span>
-    <button id="logout-btn" onclick="logout()">LOGOUT</button>
     <span id="bc">00:00</span>
     <span id="bd"></span>
   </div>
@@ -304,107 +262,36 @@
   </div>
 </div>
 
-</div><!-- end main-app -->
-
 <script>
 // ── API BASE ──
+// Points to Railway server — works from any device
 const API = 'https://server-production-ac4d2.up.railway.app';
 
-// ── TOKEN STORAGE ──
-var token = localStorage.getItem('token') || null;
-var currentUser = localStorage.getItem('username') || null;
-
-// helper: fetch wrapper with auth token
+// helper: fetch wrapper
 async function api(method, path, body) {
   try {
     var opts = { method: method, headers: { 'Content-Type': 'application/json' } };
-    if (token) opts.headers['Authorization'] = 'Bearer ' + token;
     if (body) opts.body = JSON.stringify(body);
     var res = await fetch(API + path, opts);
-    var text = await res.text();
-    if (!text) return null;
-    return JSON.parse(text);
+    return await res.json();
   } catch(e) {
     console.error('API error:', e);
     return null;
   }
 }
 
-// ── AUTH ──
-var authMode = 'login';
-
-function switchTab(mode) {
-  authMode = mode;
-  document.getElementById('tab-login').classList.toggle('on', mode === 'login');
-  document.getElementById('tab-register').classList.toggle('on', mode === 'register');
-  document.getElementById('auth-submit').textContent = mode === 'login' ? 'LOGIN' : 'REGISTER';
-  document.getElementById('auth-err').textContent = '';
-}
-
-document.getElementById('auth-pass').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') submitAuth();
-});
-document.getElementById('auth-user').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') submitAuth();
-});
-
-async function submitAuth() {
-  var username = document.getElementById('auth-user').value.trim();
-  var password = document.getElementById('auth-pass').value;
-  var errEl = document.getElementById('auth-err');
-  errEl.textContent = '';
-  if (!username || !password) { errEl.textContent = 'fill in both fields'; return; }
-
-  document.getElementById('auth-submit').textContent = '...';
-  var result = await api('POST', '/' + authMode, { username, password });
-  document.getElementById('auth-submit').textContent = authMode === 'login' ? 'LOGIN' : 'REGISTER';
-
-  if (!result) { errEl.textContent = 'server error — try again'; return; }
-  if (result.error) { errEl.textContent = result.error; return; }
-
-  // success
-  token = result.token;
-  currentUser = result.username;
-  localStorage.setItem('token', token);
-  localStorage.setItem('username', currentUser);
-  showApp();
-}
-
-function logout() {
-  token = null; currentUser = null;
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('pg-auth').style.display = 'flex';
-  document.getElementById('auth-user').value = '';
-  document.getElementById('auth-pass').value = '';
-  document.getElementById('auth-err').textContent = '';
-}
-
-function showApp() {
-  document.getElementById('pg-auth').style.display = 'none';
-  document.getElementById('main-app').style.display = 'flex';
-  document.getElementById('bar-user').textContent = currentUser;
-  initApp();
-}
-
-// Check if already logged in
-if (token) {
-  showApp();
-} else {
-  document.getElementById('pg-auth').style.display = 'flex';
-  setTimeout(function(){ document.getElementById('auth-user').focus(); }, 100);
-}
-
 // ── SERVER STATUS DOT ──
+// Pings server every 5s — green dot = server on, red = server off
 async function checkServer() {
   try {
-    var res = await fetch(API + '/tasks', { headers: { 'Authorization': 'Bearer ' + token } });
-    document.getElementById('srv-dot').classList.toggle('ok', res.ok);
+    await fetch(API + '/tasks');
+    document.getElementById('srv-dot').classList.add('ok');
   } catch(e) {
     document.getElementById('srv-dot').classList.remove('ok');
   }
 }
+checkServer();
+setInterval(checkServer, 5000);
 
 // ── CLOCK ──
 function tick() {
@@ -419,6 +306,7 @@ tick(); setInterval(tick, 10000);
 // ── NAV ──
 var pgs = document.querySelectorAll('.pg');
 var nbs = document.querySelectorAll('.nb');
+
 nbs.forEach(function(b) {
   b.addEventListener('click', function() {
     var id = b.dataset.p;
@@ -465,35 +353,27 @@ var ITEMS = [
   {a:'cal', n:'Calendar',    i:'📅', u:'https://calendar.google.com',            c:'school'},
 ];
 
-var liEl, lrEl, lgEl, lf = [], la = 0;
+var liEl = document.getElementById('li');
+var lrEl = document.getElementById('lr');
+var lgEl = document.getElementById('lg');
+var lf = [], la = 0;
 
-function initLauncher() {
-  liEl = document.getElementById('li');
-  lrEl = document.getElementById('lr');
-  lgEl = document.getElementById('lg');
-  lgEl.innerHTML = '';
-  ITEMS.forEach(function(item) {
-    var el = document.createElement('div');
-    el.className = 'lgi';
-    el.innerHTML = '<span class="lgem">'+item.i+'</span><span>'+item.n+'</span><span class="lgal">'+item.a+'</span>';
-    el.onclick = function() { lopen(item.u); };
-    lgEl.appendChild(el);
-  });
-  liEl.addEventListener('input', function() {
-    var q = liEl.value.trim().toLowerCase();
-    if (!q) { lgEl.style.display=''; lrEl.style.display='none'; lf=[]; return; }
-    lgEl.style.display = 'none'; lrEl.style.display = '';
-    lf = ITEMS.filter(function(x){ return x.a.startsWith(q)||x.n.toLowerCase().includes(q)||x.c.includes(q); })
-      .sort(function(a,b){ return (a.a===q?-2:a.a.startsWith(q)?-1:0)-(b.a===q?-2:b.a.startsWith(q)?-1:0); });
-    la = 0; lrender();
-  });
-  liEl.addEventListener('keydown', function(e) {
-    if(e.key==='ArrowDown'){e.preventDefault();if(lf.length){la=(la+1)%lf.length;lhl();}}
-    else if(e.key==='ArrowUp'){e.preventDefault();if(lf.length){la=(la-1+lf.length)%lf.length;lhl();}}
-    else if(e.key==='Enter'){e.preventDefault();if(lf.length)lopen(lf[la].u);}
-    else if(e.key==='Escape'){liEl.value='';lgEl.style.display='';lrEl.style.display='none';lf=[];}
-  });
-}
+ITEMS.forEach(function(item) {
+  var el = document.createElement('div');
+  el.className = 'lgi';
+  el.innerHTML = '<span class="lgem">'+item.i+'</span><span>'+item.n+'</span><span class="lgal">'+item.a+'</span>';
+  el.onclick = function() { lopen(item.u); };
+  lgEl.appendChild(el);
+});
+
+liEl.addEventListener('input', function() {
+  var q = liEl.value.trim().toLowerCase();
+  if (!q) { lgEl.style.display=''; lrEl.style.display='none'; lf=[]; return; }
+  lgEl.style.display = 'none'; lrEl.style.display = '';
+  lf = ITEMS.filter(function(x){ return x.a.startsWith(q)||x.n.toLowerCase().includes(q)||x.c.includes(q); })
+    .sort(function(a,b){ return (a.a===q?-2:a.a.startsWith(q)?-1:0)-(b.a===q?-2:b.a.startsWith(q)?-1:0); });
+  la = 0; lrender();
+});
 
 function lrender() {
   if (!lf.length) { lrEl.innerHTML='<div class="lno">no match — try: cl ds gpt yt gh dc mt nt</div>'; return; }
@@ -505,7 +385,16 @@ function lrender() {
     el.onmouseenter = function() { la=+el.dataset.i; lhl(); };
   });
 }
+
 function lhl() { lrEl.querySelectorAll('.litem').forEach(function(el,i){ el.classList.toggle('on',i===la); }); }
+
+liEl.addEventListener('keydown', function(e) {
+  if(e.key==='ArrowDown'){e.preventDefault();if(lf.length){la=(la+1)%lf.length;lhl();}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(lf.length){la=(la-1+lf.length)%lf.length;lhl();}}
+  else if(e.key==='Enter'){e.preventDefault();if(lf.length)lopen(lf[la].u);}
+  else if(e.key==='Escape'){liEl.value='';lgEl.style.display='';lrEl.style.display='none';lf=[];}
+});
+
 function lopen(url) {
   var a = document.createElement('a');
   a.href=url; a.target='_blank'; a.rel='noopener';
@@ -514,70 +403,71 @@ function lopen(url) {
   liEl.focus();
 }
 
+window.addEventListener('load', function(){ liEl.focus(); });
+
 // ── QUOTES ──
 var QS = ['the secret of getting ahead is getting started.','stop organizing. start doing.','one page a day is a book in a year.','distraction is the enemy of depth.','close the tab. write the thing.','the work you avoid is usually the work that matters.','details are not details. they make the design.','progress, not perfection.','do the hard part first. everything else is easy.','your future self is watching you right now.','boredom is the beginning of every great project.','the person who chases two rabbits catches neither.'];
 var lq = -1;
-function initQuotes() {
-  var qel = document.getElementById('qel');
-  function nq() {
-    qel.classList.add('fade');
-    setTimeout(function(){
-      var i; do { i=Math.floor(Math.random()*QS.length); } while(i===lq&&QS.length>1);
-      lq=i; qel.textContent='"'+QS[i]+'"'; qel.classList.remove('fade');
-    }, 280);
-  }
-  qel.addEventListener('click', nq); nq();
+var qel = document.getElementById('qel');
+function nq() {
+  qel.classList.add('fade');
+  setTimeout(function(){
+    var i; do { i=Math.floor(Math.random()*QS.length); } while(i===lq&&QS.length>1);
+    lq=i; qel.textContent='"'+QS[i]+'"'; qel.classList.remove('fade');
+  }, 280);
 }
+qel.addEventListener('click', nq); nq();
 
 // ══════════════════════════════
-//  FOCUS
+//  FOCUS — talks to server
 // ══════════════════════════════
-function initFocus() {
-  var fin   = document.getElementById('fin');
-  var fwrap = document.getElementById('fwrap');
-  var fdb   = document.getElementById('fdb');
-  var fcb   = document.getElementById('fcb');
+var fin   = document.getElementById('fin');
+var fwrap = document.getElementById('fwrap');
+var fdb   = document.getElementById('fdb');
+var fcb   = document.getElementById('fcb');
 
-  api('GET', '/focus').then(function(data) {
-    if (!data) return;
-    fin.value = data.text || '';
-    if (fin.value) fcb.classList.add('vis');
-    if (data.done) setDone(true);
-  });
+// load focus from server on startup
+api('GET', '/focus').then(function(data) {
+  if (!data) return;
+  fin.value = data.text || '';
+  if (fin.value) fcb.classList.add('vis');
+  if (data.done) setDone(true);
+});
 
-  var focusTimer;
-  fin.addEventListener('input', function() {
-    fcb.classList.toggle('vis', fin.value.length > 0);
-    if (fwrap.classList.contains('fdone')) unDone();
-    clearTimeout(focusTimer);
-    focusTimer = setTimeout(function(){ saveFocus(); }, 800);
-  });
+var focusTimer;
+fin.addEventListener('input', function() {
+  fcb.classList.toggle('vis', fin.value.length > 0);
+  if (fwrap.classList.contains('fdone')) unDone();
+  // debounce — save 800ms after user stops typing
+  clearTimeout(focusTimer);
+  focusTimer = setTimeout(function(){ saveFocus(); }, 800);
+});
 
-  fcb.addEventListener('click', function() {
-    fin.value = ''; fcb.classList.remove('vis'); unDone();
-    api('POST', '/focus', { text: '', done: false });
-  });
+fcb.addEventListener('click', function() {
+  fin.value = ''; fcb.classList.remove('vis'); unDone();
+  api('POST', '/focus', { text: '', done: false });
+});
 
-  fdb.addEventListener('click', function() {
-    if (fwrap.classList.contains('fdone')) { unDone(); api('POST', '/focus', { text: fin.value, done: false }); }
-    else { setDone(); api('POST', '/focus', { text: fin.value, done: true }); }
-  });
+fdb.addEventListener('click', function() {
+  if (fwrap.classList.contains('fdone')) { unDone(); api('POST', '/focus', { text: fin.value, done: false }); }
+  else { setDone(); api('POST', '/focus', { text: fin.value, done: true }); }
+});
 
-  function saveFocus() { api('POST', '/focus', { text: fin.value, done: fwrap.classList.contains('fdone') }); }
-  function setDone(s) { fwrap.classList.add('fdone'); fdb.textContent='✓'; if(!s){fdb.style.transform='scale(1.3)';setTimeout(function(){fdb.style.transform='';},220);} }
-  function unDone() { fwrap.classList.remove('fdone'); fdb.textContent='○'; }
-}
+function saveFocus() { api('POST', '/focus', { text: fin.value, done: fwrap.classList.contains('fdone') }); }
+function setDone(s) { fwrap.classList.add('fdone'); fdb.textContent='✓'; if(!s){fdb.style.transform='scale(1.3)';setTimeout(function(){fdb.style.transform='';},220);} }
+function unDone() { fwrap.classList.remove('fdone'); fdb.textContent='○'; }
 
 // ══════════════════════════════
-//  TASKS
+//  TASKS — talks to server
 // ══════════════════════════════
 var tasks = [];
-function initTasks() {
-  api('GET', '/tasks').then(function(data) {
-    if (data) { tasks = data; renderTasks(); }
-  });
-  document.getElementById('t-in').addEventListener('keydown', function(e){ if(e.key==='Enter') addTask(); });
-}
+
+// load tasks from server on startup
+api('GET', '/tasks').then(function(data) {
+  if (data) { tasks = data; renderTasks(); }
+});
+
+document.getElementById('t-in').addEventListener('keydown', function(e){ if(e.key==='Enter') addTask(); });
 
 async function addTask() {
   var v = document.getElementById('t-in').value.trim();
@@ -611,20 +501,19 @@ function renderTasks() {
 }
 
 // ══════════════════════════════
-//  NOTES
+//  NOTES — talks to server
 // ══════════════════════════════
 var notes = [];
 var activeNote = null;
 
-function initNotes() {
-  api('GET', '/notes').then(function(data) {
-    if (data && data.length) {
-      notes = data;
-      activeNote = notes[0].id;
-      renderNotes();
-    }
-  });
-}
+// load notes from server on startup
+api('GET', '/notes').then(function(data) {
+  if (data && data.length) {
+    notes = data;
+    activeNote = notes[0].id;
+    renderNotes();
+  }
+});
 
 async function addNote() {
   var title = 'note ' + (notes.length + 1);
@@ -640,6 +529,7 @@ async function addNote() {
 async function delNote(e, id) {
   e.stopPropagation();
   if (notes.length === 1) {
+    // just clear it, don't delete
     notes[0].title = 'scratch'; notes[0].body = '';
     await api('PATCH', '/notes/'+id, { title: 'scratch', body: '' });
     renderNotes(); return;
@@ -667,6 +557,7 @@ function renderNotes() {
   panelsEl.innerHTML = '';
 
   notes.forEach(function(note) {
+    // tab
     var tab = document.createElement('button');
     tab.className = 'ntab' + (note.id===activeNote?' non':'');
     tab.dataset.nid = note.id;
@@ -677,6 +568,7 @@ function renderNotes() {
     });
     tabsEl.insertBefore(tab, addBtn);
 
+    // panel
     var panel = document.createElement('div');
     panel.className = 'npanel' + (note.id===activeNote?' non':'');
     panel.dataset.nid = note.id;
@@ -686,6 +578,7 @@ function renderNotes() {
       '<div class="nfooter"><span>synced to server</span><button onclick="clearNote('+note.id+')">clear</button></div>';
     panelsEl.appendChild(panel);
 
+    // title input
     var titleIn = panel.querySelector('.ntitle-in');
     var titleTimer;
     titleIn.addEventListener('input', function() {
@@ -699,6 +592,7 @@ function renderNotes() {
       }
     });
 
+    // body textarea
     var ta = panel.querySelector('.nta');
     var bodyTimer;
     ta.addEventListener('input', function() {
@@ -715,23 +609,24 @@ function renderNotes() {
 }
 
 // ══════════════════════════════
-//  SETUP LOG
+//  SETUP LOG — talks to server
 // ══════════════════════════════
 var sitems = [];
 var sf = 'all';
 
-function initSetup() {
-  api('GET', '/setup').then(function(data) {
-    if (data) { sitems = data; renderSetup(); }
-  });
-  document.getElementById('si-in').addEventListener('keydown', function(e){ if(e.key==='Enter') addSetup(); });
-  document.getElementById('sftabs').addEventListener('click', function(e) {
-    if (!e.target.classList.contains('ftab')) return;
-    document.querySelectorAll('.ftab').forEach(function(x){ x.classList.remove('fon'); });
-    e.target.classList.add('fon');
-    sf = e.target.dataset.f; renderSetup();
-  });
-}
+// load setup items from server on startup
+api('GET', '/setup').then(function(data) {
+  if (data) { sitems = data; renderSetup(); }
+});
+
+document.getElementById('si-in').addEventListener('keydown', function(e){ if(e.key==='Enter') addSetup(); });
+
+document.getElementById('sftabs').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('ftab')) return;
+  document.querySelectorAll('.ftab').forEach(function(x){ x.classList.remove('fon'); });
+  e.target.classList.add('fon');
+  sf = e.target.dataset.f; renderSetup();
+});
 
 async function addSetup() {
   var v   = document.getElementById('si-in').value.trim();
@@ -764,19 +659,6 @@ function renderSetup() {
   el.innerHTML = filt.map(function(x){
     return '<div class="sitem '+(x.done?'sdone':'')+'"><div class="sichk '+(x.done?'schked':'')+'" onclick="toggleSetup('+x.id+')">'+(x.done?'✓':'')+'</div><span class="sitag '+x.tag+'">'+x.tag+'</span><span class="sitext">'+x.text+'</span><span class="sidate">'+x.date+'</span><button class="sidel" onclick="delSetup('+x.id+')">×</button></div>';
   }).join('');
-}
-
-// ── INIT APP (called after login) ──
-function initApp() {
-  initLauncher();
-  initQuotes();
-  initFocus();
-  initTasks();
-  initNotes();
-  initSetup();
-  checkServer();
-  setInterval(checkServer, 5000);
-  setTimeout(function(){ document.getElementById('li').focus(); }, 100);
 }
 </script>
 </body>
