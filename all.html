@@ -321,7 +321,9 @@ async function api(method, path, body) {
     if (token) opts.headers['Authorization'] = 'Bearer ' + token;
     if (body) opts.body = JSON.stringify(body);
     var res = await fetch(API + path, opts);
-    return await res.json();
+    var text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
   } catch(e) {
     console.error('API error:', e);
     return null;
